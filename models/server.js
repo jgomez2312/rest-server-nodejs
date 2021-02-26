@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { dbConnection } = require('../database/config');
 
 
 class Server {
@@ -9,11 +10,18 @@ class Server {
         this.port = process.env.PORT;
         this.usuariosPath = '/api/usuarios';
 
+        //Conexion a la DB de Mongo
+        this.dbConexion();
+
         //Middelwares
         this.middelwares();
 
         // Rutas de mi aplicaión
         this.routes();
+    }
+
+    async dbConexion() {
+        await dbConnection();
     }
 
     middelwares() {
