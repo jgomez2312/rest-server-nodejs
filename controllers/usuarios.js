@@ -4,25 +4,41 @@ const bcryptjs = require('bcryptjs');
 const Usuario = require('../models/usuario');
 
 
-const getUsuario = (req = request, res = response) => {
+const getUsuario = async(req = request, res = response) => {
 
-    const { q, nombre = 'No Name', apiKey } = req.query;
+    const { limite = 5, desde = 0 } = req.query;
+    const queryEstado = { estado: true };
+
+    const [total, usuarios] = await Promise.all([
+        Usuario.countDocuments(queryEstado),
+        Usuario.find(queryEstado)
+        .skip(Number(desde))
+        .limit(Number(limite))
+    ]);
 
     res.json({
-        msg: "get API - Controlador",
-        q,
-        nombre,
-        apiKey
+        total,
+        usuarios
+        // total,
+        // usuarios
     });
 };
 
-const putUsuario = (req = request, res = response) => {
+const putUsuario = async(req = request, res = response) => {
 
     const { id } = req.params;
-    res.json({
-        msg: "put API - Controlador",
-        id
-    });
+    const { _id, password, google, correo, ...resto } = req.body;
+
+    // TODO validar contra la base de datos.
+    if (password) {
+        // Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync(10);
+        resto.password = bcryptjs.hashSync(password, salt);
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
+
+    res.json(usuario);
 };
 
 const postUsuario = async(req = request, res = response) => {
@@ -42,10 +58,17 @@ const postUsuario = async(req = request, res = response) => {
     });
 };
 
-const deleteUsuario = (req = request, res = response) => {
-    res.json({
-        msg: "delete API - Controlador"
-    });
+const deleteUsuario = async(req = request, res = response) => {
+
+    const { id } = req.params;
+
+    // Borrado total, con perdida referencial intentar no utilizarlo para documentos que tengan referencias a otros objetos.
+    //const usuario = await Usuario.findByIdAndDelete(id);
+
+    //Mejor forma de borrarlo, es cambiar el estado de los usuarios.
+    const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
+
+    res.json(usuario);
 };
 
 const patchUsuario = (req = request, res = response) => {
