@@ -19,8 +19,6 @@ const getUsuario = async(req = request, res = response) => {
     res.json({
         total,
         usuarios
-        // total,
-        // usuarios
     });
 };
 
@@ -61,13 +59,7 @@ const postUsuario = async(req = request, res = response) => {
 const deleteUsuario = async(req = request, res = response) => {
 
     const { id } = req.params;
-
-    // Borrado total, con perdida referencial intentar no utilizarlo para documentos que tengan referencias a otros objetos.
-    //const usuario = await Usuario.findByIdAndDelete(id);
-
-    //Mejor forma de borrarlo, es cambiar el estado de los usuarios.
     const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
-
     res.json(usuario);
 };
 
